@@ -6,11 +6,11 @@ import numpy as np
 
 logging.basicConfig(
     level=logging.INFO,
-    format="[%(levelname)s] %(asctime)s - %(message)s",
+    format="%(levelname)s | %(asctime)s | %(message)s",
     datefmt="%Y-%m-%d %I:%M:%S",
 )
 
-N_EPISODES = 500
+N_EPISODES = 100
 MODEL_UPDATE_FREQ = 50
 TARGET_MODEL_UPDATE_FREQ = 500
 
@@ -21,12 +21,12 @@ def take_action(action_space):
 
 if __name__ == "__main__":
     logging.info("Reinforcement Learning")
-    env = Environment()
-    action_space = len(env.actions)  # get actions to choose from
+    # Load environment
+    env = Environment("iris.csv", "variety")
+    # Initiate dqn agent with info on the environment
+    dqn_agent = DQN(env.state_size, len(env.actions))
 
-    dqn_agent = DQN()
-
-    # Basic rl loop
+    # Start basic rl loop
     observation = env.reset().reshape(1, 4)
     steps = 0
     for ep in range(N_EPISODES):
@@ -52,12 +52,12 @@ if __name__ == "__main__":
         )
         env.reset()
 
+    # === Test accuracy ===
     df = env.data
     y = df.variety.values
     X = df.drop(labels=["variety"], axis=1).values
-
     y_pred = dqn_agent.model.predict(X)
-    converter = {"Setosa": 0, "Versicolor": 1, "Virginica": 0}
+    converter = {"Setosa": 0, "Versicolor": 1, "Virginica": 2}
     s = 0
     for i in range(len(y)):
         if converter[y[i]] == np.argmax(y_pred[i]):

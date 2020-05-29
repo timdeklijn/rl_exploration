@@ -5,22 +5,24 @@ import random
 
 
 class DQN:
-    def __init__(self):
-        # TODO: implement gin to tune these params outside of class
+    def __init__(self, state_size, action_space):
+
+        # === DQN run control parameters ===
         self.memory_size = 1000
         self.learning_rate = 0.01
         self.batch_size = 32
-        self.gamma = 0.9999
+        self.gamma = 0.85
         self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
+        self.epsilon_decay = 0.9995
         self.action_space = [0, 1, 2]
 
+        # === Initialize class variables ===
         self.memory = deque(maxlen=self.memory_size)
-        self.model = self.create_model()
-        self.target_model = self.create_model()
+        self.model = self.create_model(state_size, action_space)
+        self.target_model = self.create_model(state_size, action_space)
 
-    def create_model(self):
+    def create_model(self, input_shape, output_shape):
         """Create and compule a simple sequential model
 
         Returns
@@ -29,9 +31,9 @@ class DQN:
             model
         """
         model = tf.keras.Sequential()
-        model.add(tf.keras.Input(shape=(4,)))
+        model.add(tf.keras.Input(shape=input_shape))
         model.add(tf.keras.layers.Dense(10, activation="relu"))
-        model.add(tf.keras.layers.Dense(3, activation="relu"))
+        model.add(tf.keras.layers.Dense(output_shape, activation="relu"))
         model.compile(
             loss="mean_squared_error",
             optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate),
