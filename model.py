@@ -1,11 +1,20 @@
+import logging
+import random
+from collections import deque
 import numpy as np
 import tensorflow as tf
-from collections import deque
-import random
+
+from environment import Environment
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s | %(asctime)s | %(message)s",
+    datefmt="%Y-%m-%d %I:%M:%S",
+)
 
 
 class DQN:
-    def __init__(self, state_size, action_space):
+    def __init__(self, id, fname, label):
 
         # === DQN run control parameters ===
         self.memory_size = 1000
@@ -17,7 +26,14 @@ class DQN:
         self.epsilon_decay = 0.9995
         self.action_space = [0, 1, 2]
 
+        # === Add environment ===
+        self.id = id
+        self.env = Environment(fname, label)
+        state_size = self.env.state_size
+        action_space = len(self.env.actions)
+
         # === Initialize class variables ===
+        self.score = None
         self.memory = deque(maxlen=self.memory_size)
         self.model = self.create_model(state_size, action_space)
         self.target_model = self.create_model(state_size, action_space)
@@ -105,3 +121,34 @@ class DQN:
         if np.random.random() < self.epsilon:
             return np.random.choice(self.action_space)
         return np.argmax(self.model.predict(obs)[0])
+
+    def run_agent(self, n_episodes, model_update_freq, target_model_update_freq):
+        # Initialize agent run
+        observation = self.env.reset().reshape(1, 4)
+        steps = 0
+        for ep in range(n_episodes):
+            ep_reward = 0
+            while True:
+                action = self.act(observation)
+                reward, new_observation, done = self.env.step(action)
+                new_observation = new_observation.reshape(1, 4)
+                self.remember(observation, action, reward, new_observation, done)
+
+                if steps % model_update_freq == 0:
+                    self.replay()
+                if steps % target_model_update_freq == 0:
+                    self.target_train()
+
+                observation = new_observation
+                ep_reward += reward
+                steps += 1
+                if done:
+                    break
+            logging.info(
+                f"agent: {self.id}, "
+                f"reward: {ep_reward}, "
+                f"episode: {ep}, "
+                f"epsilon: {self.epsilon:5.2f} "
+            )
+            self.env.reset()
+        self.score = ep_reward

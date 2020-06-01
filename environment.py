@@ -16,7 +16,7 @@ class Environment:
         # === Load and set data ===
         self.label = label  # Column to classify
         self.data = pd.read_csv(fname)  # Load data set, this not be altered
-        self.actions = self.data[label].unique()  # Currently hardcoded
+        self.actions = self.data[label].unique()
         self.state_size = np.shape(
             np.array([i for i in self.data.columns if i != self.label])
         )
