@@ -20,7 +20,7 @@ class DQN:
         self.memory_size = 1000
         self.learning_rate = 0.01
         self.batch_size = 32
-        self.gamma = 0.85
+        self.gamma = 0.95
         self.epsilon = 1.0
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.9995

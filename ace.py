@@ -1,7 +1,5 @@
 import logging
 from operator import attrgetter
-import requests
-import multiprocessing
 
 from model import DQN
 
@@ -24,7 +22,7 @@ class Ace:
         self.target_model_update_freq = 500
         # Set the weights of all models to the best model every `pick_best_weights_freq`
         # episodes
-        self.episodes_per_run = 20
+        self.episodes_per_run = 30
 
         # === Create Agents ===
         self.agents = [DQN(i, fname, label) for i in range(n_agents)]

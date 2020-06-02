@@ -11,13 +11,13 @@ logging.basicConfig(
 
 
 def assess_final_model(agent):
-    # === Test accuracy ===
     df = agent.env.data
     y = df.variety.values
     X = df.drop(labels=["variety"], axis=1).values
     y_pred = agent.model.predict(X)
     converter = {"Setosa": 0, "Versicolor": 1, "Virginica": 2}
     s = 0
+    # === Test accuracy ===
     for i in range(len(y)):
         if converter[y[i]] == np.argmax(y_pred[i]):
             s += 1
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     logging.info("Multi Agent Reinforcement Learning")
 
     # === Create Ace class and perform RL ===
-    ace = Ace("iris.csv", "variety", 8)
+    ace = Ace("iris.csv", "variety", 4)
     ace.run_agents()
 
     final_agent = ace.agents[0]
