@@ -6,7 +6,7 @@ from model import DQN
 logging.basicConfig(
     level=logging.INFO,
     format="%(levelname)s | %(asctime)s | %(message)s",
-    datefmt="%Y-%m-%d %I:%M:%S",
+    datefmt="%Y-%m-%d %X",
 )
 
 
@@ -15,14 +15,14 @@ class Ace:
 
         # === Globals ===
         # Total number of episodes
-        self.training_runs = 10
+        self.training_runs = 4
         # Update dqn.model weights every `model_update_freq` steps
-        self.model_update_freq = 50
+        self.model_update_freq = 20
         # Update dqn dqb.target_model weights every `target_model_update_freq` steps
-        self.target_model_update_freq = 500
+        self.target_model_update_freq = 200
         # Set the weights of all models to the best model every `pick_best_weights_freq`
         # episodes
-        self.episodes_per_run = 30
+        self.episodes_per_run = 40
 
         # === Create Agents ===
         self.agents = [DQN(i, fname, label) for i in range(n_agents)]

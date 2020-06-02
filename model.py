@@ -16,27 +16,28 @@ logging.basicConfig(
 class DQN:
     def __init__(self, id, fname, label):
 
+        # === ID to separate from other agents ===
+        self.id = id
+
         # === DQN run control parameters ===
-        self.memory_size = 1000
+        self.memory_size = 2000
         self.learning_rate = 0.01
-        self.batch_size = 32
-        self.gamma = 0.95
+        self.batch_size = 64
+        self.gamma = 0.99
         self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.9995
-        self.action_space = [0, 1, 2]
+        self.epsilon_decay = 0.99995
 
         # === Add environment ===
-        self.id = id
         self.env = Environment(fname, label)
         state_size = self.env.state_size
-        action_space = len(self.env.actions)
+        self.action_space = len(self.env.actions)
 
         # === Initialize class variables ===
         self.score = None
         self.memory = deque(maxlen=self.memory_size)
-        self.model = self.create_model(state_size, action_space)
-        self.target_model = self.create_model(state_size, action_space)
+        self.model = self.create_model(state_size, self.action_space)
+        self.target_model = self.create_model(state_size, self.action_space)
 
     def create_model(self, input_shape, output_shape):
         """Create and compule a simple sequential model
@@ -46,10 +47,13 @@ class DQN:
         tf.keras.Sequential
             model
         """
+        # Leaky Relu activation function
+        lrelu = lambda x: tf.keras.layers.LeakyReLU(alpha=0.1)(x)
         model = tf.keras.Sequential()
         model.add(tf.keras.Input(shape=input_shape))
-        model.add(tf.keras.layers.Dense(10, activation="relu"))
-        model.add(tf.keras.layers.Dense(output_shape, activation="relu"))
+        model.add(tf.keras.layers.Dense(5, activation=lrelu))
+        model.add(tf.keras.layers.Dense(5, activation=lrelu))
+        model.add(tf.keras.layers.Dense(output_shape, activation=lrelu))
         model.compile(
             loss="mean_squared_error",
             optimizer=tf.keras.optimizers.Adam(lr=self.learning_rate),
@@ -82,6 +86,7 @@ class DQN:
         if len(self.memory) < self.batch_size:
             return
         samples = random.sample(self.memory, self.batch_size)
+        obs_list, target_list = [], []
         for sample in samples:
             obs, action, reward, new_obs, done = sample
             target = self.target_model.predict(obs)
@@ -90,7 +95,11 @@ class DQN:
             else:
                 Q_future = max(self.target_model.predict(new_obs)[0])
                 target[0][action] = reward + Q_future * self.gamma
-            self.model.fit(obs, target, epochs=1, verbose=0)
+            # Create X,y for model weights update
+            obs_list.append(obs[0])
+            target_list.append(target[0])
+        # Update model
+        self.model.fit(np.array(obs_list), np.array(target_list), epochs=1, verbose=0)
 
     def target_train(self):
         """
@@ -98,7 +107,7 @@ class DQN:
         """
         weights = self.model.get_weights()
         target_weights = self.target_model.get_weights()
-        for i in range(len(target_weights)):
+        for i, _ in enumerate(target_weights):
             target_weights[i] = weights[i]
         self.target_model.set_weights(target_weights)
 

@@ -55,7 +55,8 @@ class Environment:
         return reward, obs, done
 
     def _next_observation(self):
-        """Get the new observation
+        """Get the new observation and lanel, pop these from the list of
+        observations for the current episode.
 
         Returns
         -------

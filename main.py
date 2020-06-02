@@ -6,7 +6,7 @@ from ace import Ace
 logging.basicConfig(
     level=logging.INFO,
     format="%(levelname)s | %(asctime)s | %(message)s",
-    datefmt="%Y-%m-%d %I:%M:%S",
+    datefmt="%Y-%m-%d %X",
 )
 
 
